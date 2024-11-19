@@ -1,0 +1,43 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GameManager : MonoBehaviour //classe para gerenciar a lógica central do jogo 
+{
+    public static GameManager instance; //singleton
+    [SerializeField]
+    public Transform[] pontos; //array de pontos principais da área (onde os inimigos mudam de direção
+    [SerializeField]
+    public Transform pontoInicio; //ponto de onde os inimigos spawnam e começam a andar
+
+    int currency; //variável para a poupança
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void Start() //método para começar o jogo já com a poupança cheia, com 200$
+    {
+        currency = 200;
+    }
+
+    public void IncreaseCurrency(int amount) //método para aumentar a poupança
+    {
+        currency += amount;
+    }
+
+    public void SpendCurrency(int amount) //método para gastar as moedas, caso a pessoa compre algo e não tenha dinheiro o bastante, ela não pode comprar
+    { 
+        if (amount <= currency)
+        {
+            currency -= amount;
+            return;
+        }
+
+        else
+        {
+            Debug.Log("Você não tem dinheiro o bastante!");
+        }
+    }
+}
