@@ -1,0 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public interface IAtacavel //classe c/ interface para definir o ataque das torretas
+{
+    void dano(int hit);//método para definir a quantidade de danos
+}
+
