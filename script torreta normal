@@ -1,0 +1,104 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using static UnityEngine.GraphicsBuffer;
+using System;
+
+public class Torretas : Torres //classe c/ herança para representar a torreta normal
+{
+    [Header("References")]
+    [SerializeField] private Transform RotacaoTorretaPonto;//variável serializada que representar o ponto que rotaciona a torre para mirar
+    [SerializeField] private LayerMask InimigoMask;//variável serializada que representa a máscara para identificar os inimigos
+    [SerializeField] private GameObject BalaPrefab;//variável serializada que representa o prefab da bala em que a torre dispara
+    [SerializeField] private Transform firingPoint; //variável serializada que representa o local onde a bala é disparada
+
+    [Header("Attribute")]
+    [SerializeField] private float alvoRange = 5f;//variável serializada que representa a distância em que a torre irá atacar inimigos
+    [SerializeField] private float VelocidadeRotacao = 5f;//variável serializada que representa a velocidade de rotação da torre
+    [SerializeField] private float DisparoPorSEG = 1f;//variável serializada que representa os números de disparos por segundo
+
+    private Transform alvo;//variável privada que representa o inimigo que a torre está mirando
+    private float timeUntilFire; //variável privada que representa o controle do tempo até o próximo disparo
+
+    public Torretas(string _name, int _cost, GameObject _prefab) : base(_name, _cost, _prefab) //CORREÇÃO SUGERIDA PELA PRÓPRIA UNITY
+    {
+    }
+
+    private void Update()//método para checar se há algum alvo próximo, se houver, chamará outros métodos citados abaixo
+    {
+        if (alvo == null)
+        {
+            AcharAlvo();
+            return;
+        }
+        RodarAlvo();
+
+        if (!ChecarAlvo())
+        {
+            alvo = null;
+            return;
+        }
+        timeUntilFire += Time.deltaTime;
+        if (timeUntilFire >= 1f / DisparoPorSEG)
+        {
+            Atirar();
+            timeUntilFire = 0f;
+        }
+    }
+
+    void AcharAlvo()//método para fazer com que a torreta básica possa achar o seu principal alvo (inimigo)
+    {
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, alvoRange, (Vector2)transform.position, 0f, InimigoMask);
+        if (hits.Length > 0)
+        {
+            alvo = hits[0].transform;
+        }
+    }
+
+    private void OnDrawGizmosSelected() //método para marcar a área onde as balas vão disparar
+    {
+        Handles.color = Color.black;
+        Handles.DrawWireDisc(transform.position, transform.forward, alvoRange);
+    }
+
+    public void Atirar()//método para utilizar o prefab da bala para atirar 
+    {
+        GameObject BalaObj = Instantiate(BalaPrefab, firingPoint.position, Quaternion.identity);
+        Bala tiroScript = BalaObj.GetComponent<Bala>();
+        tiroScript.AcheAlvo(alvo);
+    }
+    
+    private bool ChecarAlvo()//método para checar se o alvo está dentro do alcance da torre
+    {
+        if (alvo == null) return false;
+        return Vector2.Distance(alvo.position, RotacaoTorretaPonto.position) <= alvoRange;
+    }
+
+    private void RodarAlvo()//método para rotacionar a torre em direção ao alvo
+    {
+        float angulo = Mathf.Atan2(alvo.position.y - transform.position.y, alvo.position.x - transform.position.x) * Mathf.Rad2Deg + 90f;
+        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, 0f, angulo));
+        RotacaoTorretaPonto.rotation = Quaternion.RotateTowards(RotacaoTorretaPonto.rotation, targetRotation, VelocidadeRotacao * Time.deltaTime);
+    }
+}
+
+public class Bbala : Torres //classe derivada para representar o objeto da bala
+{
+    [Header("References")]
+    [SerializeField] private Rigidbody2D rb; //variável faz referência ao Rigidbody2D
+
+    [Header("Attributes")]
+    [SerializeField] private float velocidadeBala = 5f; //variável que representa a velocidade da bala
+    [SerializeField] private int danoBala = 1;//variável que representa o quanto de dano a bala irá causar
+    private Transform alvoA;//variável que representa o alvo que a bala está perseguindo(inimigo)
+
+    public Bbala(string _name, int _cost, GameObject _prefab) : base(_name, _cost, _prefab) //CORREÇÃO SUGERIDA PELA PRÓPRIA UNITY
+    {
+    }
+
+    public void Alvo(Transform Alvo) //método para autorizar a bala saber qual alvo ela precisa seguir
+    {
+        alvoA = Alvo;
+    }
+}
