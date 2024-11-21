@@ -1,0 +1,49 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class TorretaGelo1 : Torres //método c/ herança para definir a torreta de gelo
+{
+    [Header("References")]
+    [SerializeField] private LayerMask InimigoMask;//variável serializada que representa a máscara para identificar os inimigos
+
+    [Header("Attribute")]
+    [SerializeField] private float alvoRange = 5f;//variável serializada que representa a distância em que a torre irá atacar inimigos
+    [SerializeField] private float AtaquePorSEG = 2f;//variável serializada que representa os números de disparos por segundo
+    [SerializeField] private float freezeTime = 1f; //variável serializada para representa o tempo em que o inimigo fica congelado
+
+    private float timeUntilFire; //variável para definir o último disparo
+
+    public TorretaGelo1(string _name, int _cost, GameObject _prefab) : base(_name, _cost, _prefab) //CORREÇÃO SUGERIDA PELA PRÓPRIA UNITY
+    {
+    }
+
+    private void Update()//método para checar se há algum alvo próximo, se houver, chamará outros métodos citados abaixo
+    {
+        timeUntilFire += Time.deltaTime;
+        if (timeUntilFire >= 1f / AtaquePorSEG)
+        {
+            CongelarInimigos();
+            timeUntilFire = 0f;
+        }
+    }
+    void CongelarInimigos()//método para definir o gatilho que irá fazer o inimigo congelar
+    {
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, alvoRange, (Vector2)transform.position, 0f, InimigoMask);
+        if(hits.Length > 0 )
+        {
+            for(int i = 0; i < hits.Length; i++)
+            {
+                RaycastHit2D hit = hits[i];
+                Inimigo I = hit.transform.GetComponent<Inimigo>();
+                I.AtualizarVelocidade(0.5f);
+            }
+        }
+    }
+    private IEnumerator ResetEnemySpeed(Inimigo inimigo) //método c/parâmetro para definir o a morte dos inimigos congelados
+    {
+        yield return new WaitForSeconds(freezeTime);
+        inimigo.ResetSpeed();
+        StartCoroutine(ResetEnemySpeed(inimigo));
+    }
+}
