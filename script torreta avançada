@@ -1,0 +1,87 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
+using Transform = UnityEngine.Transform;
+
+public class Torretas2 : Torres //classe c/ herança para definir a torreta avançada (segundo tipo de torreta)
+{
+    [Header("References")]
+    [SerializeField] private UnityEngine.Transform RotacaoTorretaPonto;//variável que define ponto que rotaciona a torre para mirar
+    [SerializeField] private LayerMask InimigoMask;//variável que define a máscara que identifica os inimigos
+    [SerializeField] private GameObject BalaPrefab;//variável que define o prefab da bala que a torre dispara
+    [SerializeField] private UnityEngine.Transform firingPoint;//variável que define o local onde a bala é disparada
+
+    [Header("Attribute")]
+    [SerializeField] private float alvoRange = 5f;//variável que define a distância em que a torre pode atacar inimigos
+    [SerializeField] private float VelocidadeRotacao = 5f;//variável que a velocidade de rotação da torre
+    [SerializeField] private float DisparoPorSEG = 2f;//variável que define o número de disparos por segundo
+
+    private UnityEngine.Transform alvo;//variável que define o inimigo que a torre está mirando
+    private float timeUntilFire;//variável que define o controle do tempo até o próximo disparo
+
+    public Torretas2(string _name, int _cost, GameObject _prefab) : base(_name, _cost, _prefab) //CORREÇÃO SUGERIDA PELA PRÓPRIA UNITY
+    {
+    }
+
+    private void Update()//método para verificar se existe algum alvo, se tiver, chama os outros métodos
+    {
+        if (alvo == null)
+        {
+            ProcurarAlvo();
+            return;
+        }
+
+        GirarAlvo();
+
+        if (!ChecarAlvo())
+        {
+            alvo = null;
+            return;
+        }
+        timeUntilFire += Time.deltaTime;
+        if (timeUntilFire >= 1f / DisparoPorSEG)
+        {
+            Atirar();
+            timeUntilFire = 0f;
+        }
+    }
+    void ProcurarAlvo() //método para definir o método chamado anteriormente
+    {
+
+    }
+    void GirarAlvo() //método para definir o método chamado anteriormente
+    {
+
+    }
+    public void Atirar()//método para usar o prefab da bala e define seu alvo e atira
+    {
+        GameObject bulletObj = Instantiate(BalaPrefab, firingPoint.position, Quaternion.identity);
+        Bala bulletScript = bulletObj.GetComponent<Bala>();
+        bulletScript.AcheAlvo(alvo);
+    }
+    private GameObject Instantiate(GameObject balaPrefab, Vector3 position, Quaternion identity)//CORREÇÃO SUGERIDA PELA PRÓPRIA UNITY
+    {
+        throw new NotImplementedException();
+    }
+    public void AcharAlvo(Transform transform)//método c/parâmetro que procura inimigos ao redor e define o primeiro encontrado como alvo
+    {
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, alvoRange, (Vector2)transform.position, 0f, InimigoMask);
+        if (hits.Length > 0)
+        {
+            alvo = hits[0].transform;
+        }
+    }
+    private bool ChecarAlvo()//método para verificar se o alvo está dentro do alcance da torre
+    {
+        if (alvo == null) return false;
+        return Vector2.Distance(alvo.position, RotacaoTorretaPonto.position) <= alvoRange;
+    }
+    private void RodarAlvo(Transform transform)//método c/parâmetro para rotacionar a torre em direção ao alvo
+    {
+        float angle = Mathf.Atan2(alvo.position.y - transform.position.y, alvo.position.x - transform.position.x) * Mathf.Rad2Deg - 90f;
+        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, 0f, angle));
+        RotacaoTorretaPonto.rotation = Quaternion.RotateTowards(RotacaoTorretaPonto.rotation, targetRotation, VelocidadeRotacao * Time.deltaTime);
+    }
+}
