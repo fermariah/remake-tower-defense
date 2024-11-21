@@ -1,0 +1,59 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Inimigo : MonoBehaviour //classe para definir as funções dos inimigos
+{
+    [Header("Referencias")]
+    [SerializeField]
+    Rigidbody2D Rb; //variável para definir o rigidbody2d de cada inimigo
+  
+    [Header("Atributos")]
+    [SerializeField]
+    float velocidadeMov = 2f; //variável para definir a velocidade que cada inimigo andará
+
+    Transform alvo; //variável para indicar que o inimigo é o alvo principal das torres
+    int index = 0; //variável de index para definir cada quadrado que o inimigo andará
+    private float baseVelocidade; //variável para definir a base de velocidade que cada inimigo terá para andar
+
+    // Start is called before the first frame update
+    void Start() //método para atribuir os pontos do instance do game manager ao alvo
+    {
+        alvo = GameManager.instance.pontos[index];
+    }
+
+    void Update() //método para fazer com que o inimigo ande dentro daquela área, caso ele chegue até o fim da área, o objeto é destruído
+    {
+        if (Vector2.Distance(alvo.position, transform.position) <= 0.1f)
+        {
+            index++;
+
+            if (index == GameManager.instance.pontos.Length)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            else
+            {
+                alvo = GameManager.instance.pontos[index];
+            }
+        }
+    }
+
+    private void FixedUpdate() //método para definir a física dos movimentos do inimigo
+    {
+        Vector2 direcao = (alvo.position - transform.position).normalized;
+        Rb.velocity = direcao * velocidadeMov;
+    }
+
+    public void AtualizarVelocidade(float velocidadeNOVA) //método c/ parâmetro para atualizar a velocidade dos inimigos
+    {
+        velocidadeMov = velocidadeNOVA;
+    }
+
+    public void ResetSpeed() //método para atribuir a velocidade de movimento com a sua base
+    {
+        velocidadeMov = baseVelocidade;
+    }
+}
