@@ -1,0 +1,76 @@
+using System.Collections;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UI;
+using static UnityEngine.Advertisements.Advertisement;
+
+public class AdSimulator : MonoBehaviour //classe para definir os ADS
+{
+    public Sprite bannerAds; //variável de sprite para definir o banner
+    public Sprite interstitialAd; //variável de sprite para definir o intersticial
+    public Sprite rewardAd; //variável de sprite para definir a recompensa
+
+    
+    private IEnumerator LoopBanner(float displayTime, float hideTime) //método c/parâmetro e interface para definir o loop para exibir e ocultar o banner continuamente
+    {
+        while (true)
+        {
+            // Exibir o banner
+            bannerAds.GetComponent<Renderer>().enabled = true;
+            yield return new WaitForSeconds(displayTime);
+
+            // Ocultar o banner
+            bannerAds.GetComponent<Renderer>().enabled = false;
+            yield return new WaitForSeconds(hideTime);
+        }
+    }
+
+public void ShowInterstitialAd()//método para exibir o Interstitial e pausa o jogo
+    {
+        if (interstitialAd == null)
+        {
+            Debug.LogError("InterstitialAd não está configurado!");
+            return;
+        }
+        Time.timeScale = 0; 
+    }
+
+    public void CloseInterstitialAd() //método para fechar o Interstitial e retoma o jogo
+    {
+        if (interstitialAd == null)
+        {
+            Debug.LogError("InterstitialAd não está configurado!");
+            return;
+        }
+
+        Time.timeScale = 1; // Retoma o jogo
+    }
+
+    
+    public void ShowRewardAd()//método que exibe o anúncio de recompensa e pausa o jogo
+    {
+        if (rewardAd == null)
+        {
+            Debug.LogError("RewardAd não está configurado!");
+            return;
+        }
+        Time.timeScale = 0; 
+    }
+
+   
+    public void CloseRewardAd() //método para fechar o anúncio de recompensa, concede a recompensa e retoma o jogo
+    {
+        if (rewardAd == null)
+        {
+            Debug.LogError("RewardAd não está configurado!");
+            return;
+        }
+        Time.timeScale = 1; 
+        GrantReward();
+    }
+   
+    private void GrantReward() //método para conceder recompensa e adicionar a lógica para conceder a recompensa ao jogador
+    {
+        Debug.Log("Recompensa concedida!");
+    }
+}
