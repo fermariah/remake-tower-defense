@@ -1,0 +1,34 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Recompensa : MonoBehaviour //classe para especificar melhor as funções da recompensa
+{
+    public delegate void RewardAction();//delegate para a ação de recompensa
+    public static event RewardAction OnRewardGranted;//variável evento que usará o delegate
+    public GameObject rewardAd; //variável painel de Anúncio de Recompensa
+
+    void Start()//método para poder conectar um método à ação do delegate
+    {
+        OnRewardGranted += ConcederDinheiro;
+    }
+
+    public void ShowRewardAd() //método para fazer com que a função para simular o clique no botão de recompensa dê certo, exiba o painel de anúncio de recompensa, pausa o jogo durante o anúncio, simulando que o jogador fechou o anúncio e recebeu a recompensa 
+    {
+        rewardAd.SetActive(true);  
+        Time.timeScale = 0;        
+        CloseRewardAd();
+    }
+
+    public void CloseRewardAd() //método para fechar o anúncio e dispara o evento de recompensa, assim chama todos os métodos assinados ao evento (delegates) e retoma o jogo
+    {
+        rewardAd.SetActive(false); 
+        Time.timeScale = 1;      
+        OnRewardGranted?.Invoke();
+    }
+
+    void ConcederDinheiro()//método para ter o exemplo de método de recompensa, e adiciona a lógica para adicionar o dinheiro ao jogador aqui
+    {
+        Debug.Log("Recompensa concedida! Você recebeu 100 moedas.");
+    }
+}
